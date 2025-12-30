@@ -2,7 +2,7 @@
 
 A cross-platform desktop accounting application built with Electron, React, TypeScript, and Tailwind CSS.
 
-Completely built by ChatGPT and TRAE Solo.
+Completely built by ChatGPT and TRAE Solo (This readme as well).
 
 ## Features
 
