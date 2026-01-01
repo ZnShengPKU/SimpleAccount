@@ -13,6 +13,8 @@ const monthLabel = (year: number, month: number, language: 'en' | 'zh') => {
 export default function TransactionList() {
   const { transactions, categories, deleteTransaction, updateTransaction, currentYear, currentMonth, language } = useStore();
   
+  const [dayCategoryFilter, setDayCategoryFilter] = useState<Record<string, string>>({});
+
   // Grouping
   const grouped = useMemo(() => {
     const years: Record<number, Record<number, Transaction[]>> = {};
@@ -210,6 +212,11 @@ export default function TransactionList() {
                                                                 const dayDate = new Date(dateKey);
                                                                 const dayKey = dateKey;
                                                                 const isDayExpanded = expanded.has(dayKey);
+                                                                const dayCategories = Array.from(new Set(dayTxs.map(t => t.category))).sort();
+                                                                const selectedCategory = dayCategoryFilter[dayKey] ?? 'ALL';
+                                                                const visibleTxs = selectedCategory === 'ALL' 
+                                                                  ? dayTxs 
+                                                                  : dayTxs.filter(t => t.category === selectedCategory);
 
                                                                 return (
                                                                     <div key={dateKey} className="border-b last:border-0">
@@ -222,16 +229,44 @@ export default function TransactionList() {
                                                                                 <span>{format(dayDate, 'MM-dd')}</span>
                                                                                 <span className="text-gray-400 font-normal ml-1">{format(dayDate, 'EEEE')}</span>
                                                                             </div>
-                                                                            <div className="text-xs font-mono text-gray-500">
-                                                                                 {dayTotalIn > 0 && <span className="text-green-600 mr-2">+{dayTotalIn.toFixed(2)}</span>}
-                                                                                 {dayTotalOut > 0 && <span className="text-red-600">-{dayTotalOut.toFixed(2)}</span>}
+                                                                            <div className="flex items-center gap-3">
+                                                                                <div className="text-xs font-mono text-gray-500">
+                                                                                     {dayTotalIn > 0 && <span className="text-green-600 mr-2">+{dayTotalIn.toFixed(2)}</span>}
+                                                                                     {dayTotalOut > 0 && <span className="text-red-600">-{dayTotalOut.toFixed(2)}</span>}
+                                                                                </div>
+                                                                                {dayCategories.length > 1 && (
+                                                                                    <div className="text-xs" onClick={e => e.stopPropagation()}>
+                                                                                        <select
+                                                                                            className="border border-gray-300 rounded px-1 py-0.5 bg-white text-xs text-gray-700"
+                                                                                            value={selectedCategory}
+                                                                                            onClick={e => e.stopPropagation()}
+                                                                                            onChange={e => {
+                                                                                              e.stopPropagation();
+                                                                                              const value = e.target.value;
+                                                                                              setDayCategoryFilter(prev => ({
+                                                                                                ...prev,
+                                                                                                [dayKey]: value
+                                                                                              }));
+                                                                                            }}
+                                                                                        >
+                                                                                            <option value="ALL">
+                                                                                              {language === 'zh' ? '全部分类' : 'All categories'}
+                                                                                            </option>
+                                                                                            {dayCategories.map(cat => (
+                                                                                              <option key={cat} value={cat}>
+                                                                                                {cat}
+                                                                                              </option>
+                                                                                            ))}
+                                                                                        </select>
+                                                                                    </div>
+                                                                                )}
                                                                             </div>
                                                                         </div>
                                                                         
-                                                                        {isDayExpanded && (
+                                                                        {isDayExpanded && visibleTxs.length > 0 && (
                                                                             <table className="w-full text-sm">
                                                                                 <tbody>
-                                                                                    {dayTxs.sort((a,b) => b.id - a.id).map(tx => (
+                                                                                    {visibleTxs.sort((a,b) => b.id - a.id).map(tx => (
                                                                                         <TransactionRow 
                                                                                             key={tx.id} 
                                                                                             tx={tx} 

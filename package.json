@@ -4,11 +4,16 @@
   "version": "1.0.0",
   "type": "module",
   "main": "dist-electron/main.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ZnShengPKU/SimpleAccount.git"
+  },
   "scripts": {
     "dev": "concurrently \"npm run dev:vite\" \"npm run dev:electron\"",
     "dev:vite": "vite",
     "dev:electron": "wait-on tcp:5173 && tsc -p electron && node scripts/fix-commonjs.cjs && cross-env VITE_DEV_SERVER_URL=http://localhost:5173 electron .",
     "build": "tsc -b && vite build && tsc -p electron && node scripts/fix-commonjs.cjs && electron-builder",
+    "release": "tsc -b && vite build && tsc -p electron && node scripts/fix-commonjs.cjs && electron-builder -p always",
     "lint": "eslint .",
     "preview": "vite preview",
     "check": "tsc -b --noEmit"
@@ -69,6 +74,13 @@
     },
     "linux": {
       "target": "AppImage"
-    }
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "ZnShengPKU",
+        "repo": "SimpleAccount"
+      }
+    ]
   }
 }
